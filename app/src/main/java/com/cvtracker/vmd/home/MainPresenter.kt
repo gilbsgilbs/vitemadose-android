@@ -15,10 +15,10 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
 
     override fun loadCenters() {
         GlobalScope.launch(Dispatchers.Main) {
-            PrefHelper.favDepartmentCode?.let { department ->
+            PrefHelper.favDepartment?.let { department ->
                 try {
                     view.setLoading(true)
-                    DataManager.getCenters(department).let {
+                    DataManager.getCenters(department.departmentCode).let {
                         val list = mutableListOf<DisplayItem>()
                         list.add(DisplayItem.LastUpdated(it.lastUpdated))
                         if (it.availableCenters.isNotEmpty()) {
@@ -47,7 +47,7 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
     }
 
     override fun loadDepartments() {
-        if (PrefHelper.favDepartmentCode == null) {
+        if (PrefHelper.favDepartment == null) {
             view.showEmptyState()
         }
 
@@ -63,17 +63,21 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
             } finally {
                 view.setupSelector(
                     items,
-                    items.indexOfFirst { PrefHelper.favDepartmentCode == it.departmentCode })
+                    items.indexOfFirst { PrefHelper.favDepartment?.departmentCode == it.departmentCode })
             }
         }
     }
 
     override fun onDepartmentSelected(department: Department) {
-        if (department.departmentCode != PrefHelper.favDepartmentCode) {
-            PrefHelper.favDepartmentCode = department.departmentCode
+        if (department.departmentCode != PrefHelper.favDepartment?.departmentCode) {
+            PrefHelper.favDepartment = department
             view.showCenters(emptyList())
         }
         loadCenters()
+    }
+
+    override fun getSavedDepartment(): Department? {
+        return PrefHelper.favDepartment
     }
 
     override fun onCenterClicked(center: DisplayItem.Center) {
