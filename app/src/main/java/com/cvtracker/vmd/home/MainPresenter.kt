@@ -13,6 +13,8 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
 
     private var jobSearch: Job? = null
 
+    private var filterType: AnalyticsHelper.FilterType? = null
+
     override fun loadInitialState() {
         PrefHelper.favEntry.let { entry ->
             if (entry == null) {
@@ -26,24 +28,50 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
         GlobalScope.launch(Dispatchers.Main) {
             PrefHelper.favEntry?.let { entry ->
                 try {
+                    val filter = filterType ?: entry.defaultFilterType
+
                     view.setLoading(true)
+
                     DataManager.getCenters(entry.entryDepartmentCode).let {
                         val list = mutableListOf<DisplayItem>()
+
+                        val availableCenters = it.availableCenters.toMutableList()
+                        /** Add header to show last updated view **/
                         list.add(DisplayItem.LastUpdated(it.lastUpdated))
-                        if (it.availableCenters.isNotEmpty()) {
-                            list.add(DisplayItem.AvailableCenterHeader(it.availableCenters.size, it.availableCenters.sumBy { it.appointmentCount }))
-                            list.addAll(it.availableCenters.onEach { it.available = true })
+                        if (availableCenters.isNotEmpty()) {
+                            /** Add header when available centers **/
+                            list.add(DisplayItem.AvailableCenterHeader(availableCenters.size, availableCenters.sumBy { it.appointmentCount }))
+                            /** Set up distance when city search **/
+                            if(entry is SearchEntry.City) {
+                                availableCenters.onEach { it.calculateDistance(entry) }
+                            }
+                            /** Sort by distance if needed **/
+                            if(filter == AnalyticsHelper.FilterType.ByProximity) {
+                                availableCenters.sortBy { it.distance }
+                            }
+                            list.addAll(availableCenters.onEach { it.available = true })
                         }
-                        if (it.unavailableCenters.isNotEmpty()) {
-                            if (it.availableCenters.isEmpty()) {
+
+                        val unavailableCenters = it.unavailableCenters.toMutableList()
+                        if (unavailableCenters.isNotEmpty()) {
+                            /** Add the right header with  unavailable centers **/
+                            if (availableCenters.isEmpty()) {
                                 list.add(DisplayItem.UnavailableCenterHeader(R.string.no_slots_available_center_header))
                             } else {
                                 list.add(DisplayItem.UnavailableCenterHeader(R.string.no_slots_available_center_header_others))
                             }
-                            list.addAll(it.unavailableCenters.onEach { it.available = false })
+                            /** Set up distance when city search **/
+                            if(entry is SearchEntry.City) {
+                                unavailableCenters.onEach { it.calculateDistance(entry) }
+                            }
+                            /** Sort by distance if needed **/
+                            if(filter == AnalyticsHelper.FilterType.ByProximity) {
+                                unavailableCenters.sortBy { it.distance }
+                            }
+                            list.addAll(unavailableCenters.onEach { it.available = false })
                         }
                         view.showCenters(list)
-                        AnalyticsHelper.logEventSearch(entry, it, AnalyticsHelper.FilterType.ByDate)
+                        AnalyticsHelper.logEventSearch(entry, it, filter)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)

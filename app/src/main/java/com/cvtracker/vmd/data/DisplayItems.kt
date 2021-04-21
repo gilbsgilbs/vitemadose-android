@@ -1,5 +1,6 @@
 package com.cvtracker.vmd.data
 
+import android.location.Location
 import android.telephony.PhoneNumberUtils
 import androidx.annotation.StringRes
 import com.google.gson.annotations.SerializedName
@@ -21,6 +22,8 @@ sealed class DisplayItem {
         val platform: String?,
         @SerializedName("metadata")
         val metadata: Metadata?,
+        @SerializedName("location")
+        val location: LocationCenter?,
         @SerializedName("prochain_rdv")
         val nextSlot: String,
         @SerializedName("appointment_count")
@@ -29,7 +32,8 @@ sealed class DisplayItem {
         val type: String?,
         @SerializedName("vaccine_type")
         val vaccineType: List<String>?,
-        var available: Boolean = false
+        var available: Boolean = false,
+        var distance: Float = -1f
     ) : DisplayItem() {
 
         val platformEnum: Plateform?
@@ -44,7 +48,31 @@ sealed class DisplayItem {
             }
 
         val formattedAddress: String?
-            get() = metadata?.address?.replace(", ","\n")?.trim()
+            get() = metadata?.address?.replace(", ","\n")?.trim() +
+                    if(distance > 0) " - $distance kms" else ""
+
+        val hasMoreInfoToShow: Boolean
+            get() = metadata?.businessHours?.description != null ||
+                    metadata?.phoneNumber != null ||
+                    typeLabel != null
+
+        fun calculateDistance(city: SearchEntry.City){
+            distance = if(location?.latitude != null && location.longitude != null){
+                val result = FloatArray(2)
+                Location.distanceBetween(city.latitude, city.longitude, location.latitude, location.longitude, result)
+                /** result is in meters, convert it to x.x kms **/
+                (result[0]/100).toLong().toFloat()/10f
+            }else{
+                -1f
+            }
+        }
+
+        class LocationCenter(
+            @SerializedName("latitude")
+            val latitude: Double?,
+            @SerializedName("longitude")
+            val longitude: Double?
+        )
 
         class Metadata(
             @SerializedName("address")
@@ -54,9 +82,6 @@ sealed class DisplayItem {
             @SerializedName("phone_number")
             val phoneNumber: String?
         ) {
-
-            val hasMoreInfoToShow: Boolean
-                get() = businessHours?.description != null || phoneNumber != null
 
             val phoneFormatted: String?
                 get() {

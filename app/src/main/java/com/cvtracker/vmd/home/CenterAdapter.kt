@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.cvtracker.vmd.R
 import com.cvtracker.vmd.data.DisplayItem
-import com.cvtracker.vmd.extensions.color
 import com.cvtracker.vmd.extensions.colorAttr
 import com.cvtracker.vmd.extensions.hide
 import com.cvtracker.vmd.extensions.show
@@ -159,7 +158,7 @@ class CenterAdapter(
                 iconPhoneView.hide()
             }
 
-            if (center.metadata?.hasMoreInfoToShow == true){
+            if (center.hasMoreInfoToShow){
                 moreView.show()
             } else {
                 moreView.hide()

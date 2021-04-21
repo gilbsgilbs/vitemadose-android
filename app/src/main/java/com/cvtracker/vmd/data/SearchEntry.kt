@@ -1,5 +1,6 @@
 package com.cvtracker.vmd.data
 
+import com.cvtracker.vmd.master.AnalyticsHelper
 import com.google.gson.annotations.SerializedName
 
 sealed class SearchEntry {
@@ -24,6 +25,12 @@ sealed class SearchEntry {
                 postalCode.startsWith("20") -> "2B"
                 else -> postalCode.substring(0, 2)
             }
+        }
+
+    val defaultFilterType : AnalyticsHelper.FilterType
+        get() = when(this){
+            is Department -> AnalyticsHelper.FilterType.ByDate
+            is City -> AnalyticsHelper.FilterType.ByProximity
         }
 
     override fun toString(): String {
@@ -53,7 +60,7 @@ sealed class SearchEntry {
     ) : SearchEntry() {
 
         val postalCode: String
-        get() = postalCodeList.first()
+            get() = postalCodeList.first()
 
         class Center(
             @SerializedName("coordinates")
@@ -61,9 +68,9 @@ sealed class SearchEntry {
         )
 
         val latitude: Double
-            get() = center.coordinates[0]
+            get() = center.coordinates[1]
 
         val longitude: Double
-            get() = center.coordinates[1]
+            get() = center.coordinates[0]
     }
 }
