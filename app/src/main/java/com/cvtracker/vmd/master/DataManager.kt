@@ -2,11 +2,13 @@ package com.cvtracker.vmd.master
 
 import com.cvtracker.vmd.BuildConfig
 import com.cvtracker.vmd.R
+import com.cvtracker.vmd.custom.ValidatorAdapterFactory
 import com.cvtracker.vmd.data.CenterResponse
 import com.cvtracker.vmd.data.SearchEntry
 import com.cvtracker.vmd.data.StatsResponse
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -25,6 +27,9 @@ object DataManager {
     var URL_BASE = "https://vitemadose.gitlab.io"
     var PATH_DATA_DEPARTMENT = "/vitemadose/{code}.json"
     var PATH_STATS = "/vitemadose/stats.json"
+
+    var URL_CITIES_BY_NAME = "https://geo.api.gouv.fr/communes?nom={NAME}&fields=codesPostaux,centre,departement&limit=15"
+    var URL_CITIES_BY_POSTAL_CODE = "https://geo.api.gouv.fr/communes?codePostal={POSTAL_CODE}&fields=codesPostaux,centre,departement&limit=15"
 
     private var cacheDepartmentsList: List<SearchEntry.Department>? = null
 
@@ -60,6 +65,8 @@ object DataManager {
         retrofit.create(RetrofitService::class.java)
     }
 
+    private val gson = GsonBuilder().registerTypeAdapterFactory(ValidatorAdapterFactory()).create()
+
     suspend fun getCenters(departmentCode: String): CenterResponse {
         return service.getCenters(URL_BASE + PATH_DATA_DEPARTMENT.replace("{code}", departmentCode))
     }
@@ -81,13 +88,11 @@ object DataManager {
     }
 
     suspend fun getCitiesByPostalCode(code : String): List<SearchEntry.City> {
-        //TODO
-        return emptyList()
+        return service.getCities(URL_CITIES_BY_POSTAL_CODE.replace("{POSTAL_CODE}", code))
     }
 
     suspend fun getCitiesByName(name: String): List<SearchEntry.City> {
-        //TODO
-        return emptyList()
+        return service.getCities(URL_CITIES_BY_NAME.replace("{NAME}", name))
     }
 
     private fun getDepartmentsList(): List<SearchEntry.Department>? {
@@ -97,9 +102,9 @@ object DataManager {
                     .use { it.readText() }
             val myType = object : TypeToken<List<SearchEntry.Department>>() {}.type
             try {
-                cacheDepartmentsList = Gson().fromJson(data, myType)
+                cacheDepartmentsList = gson.fromJson(data, myType)
                 cacheDepartmentsList
-            } catch (e: Exception) {
+            } catch (e: JsonParseException) {
                 null
             }
         }

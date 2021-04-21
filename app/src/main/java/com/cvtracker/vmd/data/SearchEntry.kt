@@ -7,7 +7,7 @@ sealed class SearchEntry {
     val entryCode: String
         get() = when (this) {
             is Department -> this.departmentCode
-            is City -> this.code
+            is City -> this.postalCode
         }
 
     val entryName: String
@@ -20,11 +20,15 @@ sealed class SearchEntry {
         get() = when (this) {
             is Department -> this.departmentCode
             is City -> when {
-                code.startsWith("202") -> "2A"
-                code.startsWith("20") -> "2B"
-                else -> code.substring(0, 2)
+                postalCode.startsWith("202") -> "2A"
+                postalCode.startsWith("20") -> "2B"
+                else -> postalCode.substring(0, 2)
             }
         }
+
+    override fun toString(): String {
+        return "$entryCode - $entryName"
+    }
 
     class Department(
         @SerializedName("code_departement")
@@ -35,11 +39,7 @@ sealed class SearchEntry {
         val regionCode: Int,
         @SerializedName("nom_region")
         val regionName: String
-    ) : SearchEntry() {
-        override fun toString(): String {
-            return "$departmentCode - $departmentName"
-        }
-    }
+    ) : SearchEntry()
 
     class City(
         @SerializedName("code")
@@ -47,8 +47,13 @@ sealed class SearchEntry {
         @SerializedName("nom")
         val name: String,
         @SerializedName("centre")
-        val center: Center
+        val center: Center,
+        @SerializedName("codesPostaux")
+        val postalCodeList: List<String>
     ) : SearchEntry() {
+
+        val postalCode: String
+        get() = postalCodeList.first()
 
         class Center(
             @SerializedName("coordinates")
@@ -60,9 +65,5 @@ sealed class SearchEntry {
 
         val longitude: Double
             get() = center.coordinates[1]
-
-        override fun toString(): String {
-            return "$code - $name"
-        }
     }
 }

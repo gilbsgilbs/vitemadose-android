@@ -6,12 +6,12 @@ import com.cvtracker.vmd.data.SearchEntry
 import com.cvtracker.vmd.master.AnalyticsHelper
 import com.cvtracker.vmd.master.DataManager
 import com.cvtracker.vmd.master.PrefHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import timber.log.Timber
 
 class MainPresenter(private val view: MainContract.View) : MainContract.Presenter {
+
+    private var jobSearch: Job? = null
 
     override fun loadInitialState() {
         PrefHelper.favEntry.let { entry ->
@@ -27,7 +27,7 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
             PrefHelper.favEntry?.let { entry ->
                 try {
                     view.setLoading(true)
-                    DataManager.getCenters(entry.entryCode).let {
+                    DataManager.getCenters(entry.entryDepartmentCode).let {
                         val list = mutableListOf<DisplayItem>()
                         list.add(DisplayItem.LastUpdated(it.lastUpdated))
                         if (it.availableCenters.isNotEmpty()) {
@@ -43,7 +43,7 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
                             list.addAll(it.unavailableCenters.onEach { it.available = false })
                         }
                         view.showCenters(list)
-                        AnalyticsHelper.logEventSearchByDepartment(department, it, AnalyticsHelper.FilterType.ByDate)
+                        AnalyticsHelper.logEventSearch(entry, it, AnalyticsHelper.FilterType.ByDate)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
@@ -73,7 +73,15 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
     }
 
     override fun onSearchUpdated(search: String) {
-        GlobalScope.launch(Dispatchers.Main) {
+        jobSearch?.cancel()
+        if (search.length < 2) {
+            /** reset entry list **/
+            view.setupSelector(emptyList())
+            return
+        }
+        jobSearch = GlobalScope.launch(Dispatchers.Main) {
+            /** Wait a bit then we are sure the user want to do this one **/
+            delay(250)
             val list = mutableListOf<SearchEntry>()
             if (search.substring(0, 1).toIntOrNull() != null) {
                 /** Search by code **/

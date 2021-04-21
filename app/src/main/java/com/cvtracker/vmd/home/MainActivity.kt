@@ -14,6 +14,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
+import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -46,10 +47,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            val search = s?.trim() ?: return
-            if (search.length >= 2) {
-                presenter.onSearchUpdated(search.toString())
-            }
+            presenter.onSearchUpdated(s?.toString()?.trim().orEmpty())
         }
     }
 
@@ -68,8 +66,11 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
         selectedDepartment.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
+                selectedDepartment.gravity = Gravity.START
                 /** Clear text when autocompletetextview become focused **/
                 selectedDepartment.setText("", false)
+            }else{
+                selectedDepartment.gravity = Gravity.CENTER
             }
         }
 
