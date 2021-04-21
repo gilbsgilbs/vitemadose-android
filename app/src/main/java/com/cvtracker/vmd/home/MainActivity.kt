@@ -28,6 +28,7 @@ import com.cvtracker.vmd.about.AboutActivity
 import com.cvtracker.vmd.data.DisplayItem
 import com.cvtracker.vmd.data.SearchEntry
 import com.cvtracker.vmd.extensions.*
+import com.cvtracker.vmd.master.AnalyticsHelper
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
@@ -64,12 +65,16 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             startActivity(Intent(this, AboutActivity::class.java))
         }
 
+        filterSwitchView.onFilterChangedListener = { filter ->
+            presenter.onFilterChanged(filter)
+        }
+
         selectedDepartment.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 selectedDepartment.gravity = Gravity.START
                 /** Clear text when autocompletetextview become focused **/
                 selectedDepartment.setText("", false)
-            }else{
+            } else {
                 selectedDepartment.gravity = Gravity.CENTER
             }
         }
@@ -88,8 +93,9 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         presenter.loadCenters()
 
         appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val progress = (-verticalOffset / headerLayout.measuredHeight.toFloat()) * 1.5f
+            val progress = (-verticalOffset / headerLayout.measuredHeight.toFloat()) * 1.25f
             headerLayout.alpha = 1 - progress
+            filterSwitchView.alpha = 1 - progress
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 loadColor(colorAttr(R.attr.iconTintColor), color(R.color.white), progress) {
                     aboutIconView.imageTintList = ColorStateList.valueOf(it)
@@ -138,7 +144,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         displaySelectedSearchEntry(presenter.getSavedSearchEntry())
     }
 
-    override fun showCenters(list: List<DisplayItem>) {
+    override fun showCenters(list: List<DisplayItem>, filter: AnalyticsHelper.FilterType?) {
         appBarLayout.setExpanded(true, true)
         centersRecyclerView.layoutManager = LinearLayoutManager(this)
         centersRecyclerView.adapter = CenterAdapter(
@@ -148,6 +154,13 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             onAddressClicked = { startMapsActivity(it) },
             onPhoneClicked = { startPhoneActivity(it) }
         )
+        /** set up filter state **/
+        if (filter != null) {
+            filterSwitchView.show()
+            filterSwitchView.updateSelectedFilter(filter)
+        } else {
+            filterSwitchView.hide()
+        }
 
         emptyStateContainer?.parent?.let { (it as ViewGroup).removeView(emptyStateContainer) }
     }

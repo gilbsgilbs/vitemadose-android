@@ -53,9 +53,11 @@ class CenterAdapter(
                         /** I have not found the exact parser for all date format returned by the API
                          * Then I take only the string until minutes. This is sub-optimal */
                         DateFormat.format(
-                            "EEEE d MMMM à kk'h'mm",
+                            "EEEE d MMM à k'h'mm",
                             dateParser.parse(center.nextSlot.substring(0, 16))
-                        ).toString().capitalize(Locale.FRANCE)
+                        ).toString().capitalize(Locale.FRANCE) + center.formattedDistance
+
+                        //"Mercredi 25 septembre à 13h35 · 1.2 km"
                     } catch (e: Exception) {
                         ""
                     }
@@ -158,7 +160,7 @@ class CenterAdapter(
                 iconPhoneView.hide()
             }
 
-            if (center.hasMoreInfoToShow){
+            if (center.hasMoreInfoToShow) {
                 moreView.show()
             } else {
                 moreView.hide()
@@ -197,8 +199,12 @@ class CenterAdapter(
         fun bind(item: DisplayItem.LastUpdated) {
             with(itemView) {
                 lastUpdated.text = context.getString(
-                        R.string.last_updated,
-                        DateUtils.getRelativeTimeSpanString(item.date.time, System.currentTimeMillis(), 0L)
+                    R.string.last_updated,
+                    DateUtils.getRelativeTimeSpanString(
+                        item.date.time,
+                        System.currentTimeMillis(),
+                        0L
+                    )
                 )
             }
         }

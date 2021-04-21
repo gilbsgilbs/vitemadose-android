@@ -48,8 +48,17 @@ sealed class DisplayItem {
             }
 
         val formattedAddress: String?
-            get() = metadata?.address?.replace(", ","\n")?.trim() +
-                    if(distance > 0) " - $distance kms" else ""
+            get() = metadata?.address?.replace(", ","\n")?.trim()
+
+        val formattedDistance: String
+            get() {
+                val distanceString = distance.toString()
+                return when{
+                    distance > 10f -> " · ${distanceString.substring(0, distanceString.lastIndexOf("."))} km"
+                    distance > 0f -> " · $distanceString km"
+                    else -> ""
+                }
+            }
 
         val hasMoreInfoToShow: Boolean
             get() = metadata?.businessHours?.description != null ||

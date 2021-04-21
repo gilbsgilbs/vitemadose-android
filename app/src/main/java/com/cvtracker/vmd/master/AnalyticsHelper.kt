@@ -28,9 +28,9 @@ object AnalyticsHelper {
     private const val EVENT_RDV_DATA_VACCINE = "rdv_vaccine"
     private const val EVENT_RDV_DATA_FILTER_TYPE = "rdv_filter_type"
 
-    enum class FilterType(val value: String) {
-        ByDate("au plus tot"),
-        ByProximity("au plus proche");
+    enum class FilterType(val value: String, val displayTitle: String) {
+        ByDate("au plus tot", "Au plus tôt"),
+        ByProximity("au plus proche", "Au plus proche");
     }
 
     private val firebaseAnalytics: FirebaseAnalytics by lazy {

@@ -13,7 +13,7 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
 
     private var jobSearch: Job? = null
 
-    private var filterType: AnalyticsHelper.FilterType? = null
+    private var selectedFilter: AnalyticsHelper.FilterType? = null
 
     override fun loadInitialState() {
         PrefHelper.favEntry.let { entry ->
@@ -28,7 +28,7 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
         GlobalScope.launch(Dispatchers.Main) {
             PrefHelper.favEntry?.let { entry ->
                 try {
-                    val filter = filterType ?: entry.defaultFilterType
+                    val filter = selectedFilter ?: entry.defaultFilterType
 
                     view.setLoading(true)
 
@@ -40,13 +40,17 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
                         list.add(DisplayItem.LastUpdated(it.lastUpdated))
                         if (availableCenters.isNotEmpty()) {
                             /** Add header when available centers **/
-                            list.add(DisplayItem.AvailableCenterHeader(availableCenters.size, availableCenters.sumBy { it.appointmentCount }))
+                            list.add(
+                                DisplayItem.AvailableCenterHeader(
+                                    availableCenters.size,
+                                    availableCenters.sumBy { it.appointmentCount })
+                            )
                             /** Set up distance when city search **/
-                            if(entry is SearchEntry.City) {
+                            if (entry is SearchEntry.City) {
                                 availableCenters.onEach { it.calculateDistance(entry) }
                             }
                             /** Sort by distance if needed **/
-                            if(filter == AnalyticsHelper.FilterType.ByProximity) {
+                            if (filter == AnalyticsHelper.FilterType.ByProximity) {
                                 availableCenters.sortBy { it.distance }
                             }
                             list.addAll(availableCenters.onEach { it.available = true })
@@ -61,16 +65,16 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
                                 list.add(DisplayItem.UnavailableCenterHeader(R.string.no_slots_available_center_header_others))
                             }
                             /** Set up distance when city search **/
-                            if(entry is SearchEntry.City) {
+                            if (entry is SearchEntry.City) {
                                 unavailableCenters.onEach { it.calculateDistance(entry) }
                             }
                             /** Sort by distance if needed **/
-                            if(filter == AnalyticsHelper.FilterType.ByProximity) {
+                            if (filter == AnalyticsHelper.FilterType.ByProximity) {
                                 unavailableCenters.sortBy { it.distance }
                             }
                             list.addAll(unavailableCenters.onEach { it.available = false })
                         }
-                        view.showCenters(list)
+                        view.showCenters(list, if (entry is SearchEntry.City) filter else null)
                         AnalyticsHelper.logEventSearch(entry, it, filter)
                     }
                 } catch (e: Exception) {
@@ -86,8 +90,9 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
     override fun onSearchEntrySelected(searchEntry: SearchEntry) {
         if (searchEntry.entryCode != PrefHelper.favEntry?.entryCode) {
             PrefHelper.favEntry = searchEntry
-            view.showCenters(emptyList())
+            view.showCenters(emptyList(), null)
         }
+        selectedFilter = null
         loadCenters()
     }
 
@@ -98,6 +103,11 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
     override fun onCenterClicked(center: DisplayItem.Center) {
         view.openLink(center.url)
         AnalyticsHelper.logEventRdvClick(center, AnalyticsHelper.FilterType.ByDate)
+    }
+
+    override fun onFilterChanged(filter: AnalyticsHelper.FilterType) {
+        selectedFilter = filter
+        loadCenters()
     }
 
     override fun onSearchUpdated(search: String) {
