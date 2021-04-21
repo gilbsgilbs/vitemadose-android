@@ -32,15 +32,14 @@
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/dateView"
                 style="@style/TextStyle_date"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="start"
                 app:layout_constraintBottom_toTopOf="@+id/centerNameView"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/moreView"
+                app:layout_constraintStart_toStartOf="@id/iconPlaceView"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Lundi 27 septembre à 8h30" />
 
@@ -65,7 +64,7 @@
                 android:paddingTop="4dp"
                 app:layout_constraintEnd_toStartOf="@id/guidelineIcons"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/centerAddressView"
+                app:layout_constraintTop_toTopOf="@id/centerNameView"
                 app:srcCompat="@drawable/ic_place"
                 app:tint="?attr/iconTintColor" />
 
@@ -258,7 +257,7 @@
                 android:padding="4dp"
                 app:layout_constraintBottom_toBottomOf="@id/dateView"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toTopOf="@id/dateView"
                 app:srcCompat="@drawable/ic_expand_more_black_24dp"
                 app:tint="?attr/iconTintColor" />
 
