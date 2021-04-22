@@ -20,7 +20,6 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cvtracker.vmd.R
@@ -57,6 +56,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         setContentView(R.layout.activity_main)
         window.setBackgroundDrawable(ColorDrawable(colorAttr(R.attr.backgroundColor)))
 
+        refreshLayout.setProgressViewOffset(false, resources.dpToPx(10f), resources.dpToPx(60f))
         refreshLayout.setOnRefreshListener {
             presenter.loadCenters()
         }
@@ -93,22 +93,13 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         presenter.loadCenters()
 
         appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            /** Manage colors when switching between collapsed and expanded state **/
             val progress = (-verticalOffset / headerLayout.measuredHeight.toFloat()) * 1.25f
             headerLayout.alpha = 1 - progress
             filterSwitchView.alpha = 1 - progress
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 loadColor(colorAttr(R.attr.iconTintColor), color(R.color.white), progress) {
                     aboutIconView.imageTintList = ColorStateList.valueOf(it)
-                }
-                if (progress == 1.5f) {
-                    ContextCompat.getColorStateList(this, R.color.box_stroke_full_color_primary)
-                        ?.let {
-                            departmentSelector.setBoxStrokeColorStateList(it)
-                        }
-                } else {
-                    ContextCompat.getColorStateList(this, R.color.box_stroke_color)?.let {
-                        departmentSelector.setBoxStrokeColorStateList(it)
-                    }
                 }
                 loadColor(
                     colorAttr(R.attr.backgroundColor),
@@ -131,7 +122,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
                         color(R.color.grey_5),
                         progress
                     ) {
-                        departmentSelector.setBoxBackgroundColorStateList(ColorStateList.valueOf(it))
+                        departmentSelector.setCardBackgroundColor(it)
                     }
                 }
             }
@@ -156,9 +147,11 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         )
         /** set up filter state **/
         if (filter != null) {
+            centersRecyclerView.topPadding = resources.dpToPx(50f)
             filterSwitchView.show()
             filterSwitchView.updateSelectedFilter(filter)
         } else {
+            centersRecyclerView.topPadding = resources.dpToPx(12f)
             filterSwitchView.hide()
         }
 
@@ -230,7 +223,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 setSpan(
-                    ForegroundColorSpan(color(R.color.blue_main)),
+                    ForegroundColorSpan(color(R.color.danube)),
                     41,
                     51,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

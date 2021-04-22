@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/CustomCardView"
-    app:cardBackgroundColor="@color/grey_5"
+    app:cardBackgroundColor="?attr/backgroundCardColorSecondary"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp"

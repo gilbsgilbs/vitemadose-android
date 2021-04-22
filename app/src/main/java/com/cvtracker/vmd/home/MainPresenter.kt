@@ -107,6 +107,7 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
 
     override fun onFilterChanged(filter: AnalyticsHelper.FilterType) {
         selectedFilter = filter
+        view.showCenters(emptyList(), filter)
         loadCenters()
     }
 
@@ -121,16 +122,20 @@ class MainPresenter(private val view: MainContract.View) : MainContract.Presente
             /** Wait a bit then we are sure the user want to do this one **/
             delay(250)
             val list = mutableListOf<SearchEntry>()
-            if (search.substring(0, 1).toIntOrNull() != null) {
-                /** Search by code **/
-                list.addAll(DataManager.getDepartmentsByCode(search))
-                list.addAll(DataManager.getCitiesByPostalCode(search))
-            } else {
-                /** Search by name **/
-                list.addAll(DataManager.getDepartmentsByName(search))
-                list.addAll(DataManager.getCitiesByName(search))
+            try {
+                if (search.substring(0, 1).toIntOrNull() != null) {
+                    /** Search by code **/
+                    list.addAll(DataManager.getDepartmentsByCode(search))
+                    list.addAll(DataManager.getCitiesByPostalCode(search))
+                } else {
+                    /** Search by name **/
+                    list.addAll(DataManager.getDepartmentsByName(search))
+                    list.addAll(DataManager.getCitiesByName(search))
+                }
+                view.setupSelector(list)
+            }catch (e: Exception){
+                Timber.e(e)
             }
-            view.setupSelector(list)
         }
     }
 

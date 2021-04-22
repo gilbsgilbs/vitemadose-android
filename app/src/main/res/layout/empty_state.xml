@@ -31,35 +31,44 @@
         android:text="@string/find_dose_easily_and_quickly"
         app:layout_constraintTop_toBottomOf="@id/emptyStateLogoView" />
 
-    <com.google.android.material.textfield.TextInputLayout
+    <androidx.cardview.widget.CardView
         android:id="@+id/emptyStateDepartmentSelector"
-        style="@style/RegularTextInputLayout"
+        style="@style/CustomCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="4dp"
-        android:background="@android:color/transparent"
-        app:hintEnabled="false"
+        app:cardCornerRadius="8dp"
+        app:contentPadding="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/emptyStateBaselineTextView"
         app:layout_constraintWidth_max="300dp">
 
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/emptyStateSelectedDepartment"
-            android:completionThreshold="2"
-            style="@style/TextStyle_date"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/RegularTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:hint="@string/choose_department_title"
-            android:inputType="textCapSentences"
-            android:maxLines="1"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp"
-            tools:text="04 - Alpes de Haute-Provence" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:background="@android:color/transparent"
+            app:hintEnabled="false">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/emptyStateSelectedDepartment"
+                android:gravity="start"
+                style="@style/TextStyle_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:completionThreshold="2"
+                android:ellipsize="end"
+                android:hint="@string/choose_department_title"
+                android:inputType="textCapSentences"
+                android:maxLines="1"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="16sp"
+                tools:text="04 - Alpes de Haute-Provence" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </androidx.cardview.widget.CardView>
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/emptyStatePartnersTextView"

@@ -48,31 +48,39 @@
                 app:layout_constraintBottom_toBottomOf="@id/departmentSelector"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.textfield.TextInputLayout
+            <androidx.cardview.widget.CardView
                 android:id="@+id/departmentSelector"
-                style="@style/RegularTextInputLayout"
+                style="@style/CustomCardView"
+                app:cardCornerRadius="8dp"
+                app:contentPadding="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
                 android:layout_marginEnd="4dp"
                 android:background="@android:color/transparent"
-                app:hintEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_max="260dp">
 
-                <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                    android:id="@+id/selectedDepartment"
-                    style="@style/TextStyle_date"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/RegularTextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:completionThreshold="2"
-                    android:hint="@string/choose_department_title"
-                    android:inputType="textCapSentences|textNoSuggestions"
-                    android:textSize="16sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:background="@android:color/transparent"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/selectedDepartment"
+                        style="@style/TextStyle_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:completionThreshold="2"
+                        android:hint="@string/choose_department_title"
+                        android:inputType="textCapSentences|textNoSuggestions"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </androidx.cardview.widget.CardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -103,9 +111,9 @@
         <com.cvtracker.vmd.custom.FilterSwitchView
             android:id="@+id/filterSwitchView"
             android:layout_width="0dp"
+            android:visibility="gone"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="0dp"
             android:layout_marginEnd="20dp"
             android:elevation="10dp"
             app:layout_constraintEnd_toEndOf="parent"
