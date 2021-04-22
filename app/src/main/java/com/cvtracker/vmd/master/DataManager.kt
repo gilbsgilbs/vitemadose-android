@@ -32,6 +32,7 @@ object DataManager {
     var URL_CITIES_BY_POSTAL_CODE = "https://geo.api.gouv.fr/communes?codePostal={POSTAL_CODE}&fields=codesPostaux,centre,departement&limit=15"
 
     private var cacheDepartmentsList: List<SearchEntry.Department>? = null
+    private var cacheMapNearDepartments: Map<String, List<String>>? = null
 
     private val service: RetrofitService by lazy {
         val logging = HttpLoggingInterceptor().apply {
@@ -65,17 +66,35 @@ object DataManager {
         retrofit.create(RetrofitService::class.java)
     }
 
-    private val gson = GsonBuilder().registerTypeAdapterFactory(ValidatorAdapterFactory()).create()
+    private val gson = GsonBuilder()
+        .registerTypeAdapterFactory(ValidatorAdapterFactory())
+        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+        .create()
 
-    suspend fun getCenters(departmentCode: String): CenterResponse {
-        return service.getCenters(URL_BASE + PATH_DATA_DEPARTMENT.replace("{code}", departmentCode))
+    suspend fun getCenters(departmentCode: String, useNearDepartment: Boolean): CenterResponse {
+        val response = service.getCenters(URL_BASE + PATH_DATA_DEPARTMENT.replace("{code}", departmentCode))
+        if(useNearDepartment) {
+            /** We load centers from departments near the current department
+             * as some centers from an other department could be close to the city currently focused */
+            getNearDepartmentsMap()?.get(departmentCode)?.forEach { nearDepartmentCode ->
+                response.aggregate(
+                    service.getCenters(
+                        URL_BASE + PATH_DATA_DEPARTMENT.replace(
+                            "{code}",
+                            nearDepartmentCode
+                        )
+                    )
+                )
+            }
+        }
+        return response
     }
 
     suspend fun getStats(): StatsResponse {
         return service.getStats(URL_BASE + PATH_STATS)
     }
 
-    fun getDepartmentsByCode(code : String): List<SearchEntry.Department> {
+    fun getDepartmentsByCode(code: String): List<SearchEntry.Department> {
         return getDepartmentsList()?.filter {
             it.departmentCode.startsWith(code)
         } ?: emptyList()
@@ -87,14 +106,23 @@ object DataManager {
         } ?: emptyList()
     }
 
-    suspend fun getCitiesByPostalCode(code : String): List<SearchEntry.City> {
-        return service.getCities(URL_CITIES_BY_POSTAL_CODE.replace("{POSTAL_CODE}", code))
+    suspend fun getCitiesByPostalCode(code: String): List<SearchEntry.City> {
+        return if(code.length != 5){
+            /** The Geo API has not autocomplete for postalCode search **/
+            emptyList()
+        }else {
+            service.getCities(URL_CITIES_BY_POSTAL_CODE.replace("{POSTAL_CODE}", code))
+                .onEach { it.searchedPostalCode = code }
+        }
     }
 
     suspend fun getCitiesByName(name: String): List<SearchEntry.City> {
         return service.getCities(URL_CITIES_BY_NAME.replace("{NAME}", name))
     }
 
+    /**
+     * Load departments list and keep it
+     */
     private fun getDepartmentsList(): List<SearchEntry.Department>? {
         return cacheDepartmentsList ?: run {
             val data =
@@ -104,6 +132,25 @@ object DataManager {
             try {
                 cacheDepartmentsList = gson.fromJson(data, myType)
                 cacheDepartmentsList
+            } catch (e: JsonParseException) {
+                null
+            }
+        }
+    }
+
+    /**
+     * Here we load (department -> List of near departments) map
+     */
+    private fun getNearDepartmentsMap(): Map<String, List<String>>? {
+        return cacheMapNearDepartments ?: run {
+            val data =
+                ViteMaDoseApp.get().resources.openRawResource(R.raw.near_departments_map)
+                    .bufferedReader()
+                    .use { it.readText() }
+            val myType = object : TypeToken<Map<String, List<String>>>() {}.type
+            try {
+                cacheMapNearDepartments = gson.fromJson(data, myType)
+                cacheMapNearDepartments
             } catch (e: JsonParseException) {
                 null
             }

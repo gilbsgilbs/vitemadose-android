@@ -250,6 +250,10 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         Snackbar.make(container, getString(R.string.centers_error), Snackbar.LENGTH_SHORT).show()
     }
 
+    override fun showSearchError() {
+        Snackbar.make(container, getString(R.string.search_error), Snackbar.LENGTH_SHORT).show()
+    }
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     fun loadColor(
         colorStart: Int,

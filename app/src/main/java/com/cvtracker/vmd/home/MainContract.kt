@@ -34,6 +34,11 @@ interface MainContract {
         fun showCentersError()
 
         /**
+         * Notify an error occurs while retrieving suggestions
+         */
+        fun showSearchError()
+
+        /**
          * Notify centers are loading
          */
         fun setLoading(loading: Boolean)

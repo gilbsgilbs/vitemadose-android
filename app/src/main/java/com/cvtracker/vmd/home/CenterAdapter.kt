@@ -16,7 +16,6 @@ import kotlinx.android.synthetic.main.item_available_center_header.view.*
 import kotlinx.android.synthetic.main.item_center.view.*
 import kotlinx.android.synthetic.main.item_last_updated.view.*
 import kotlinx.android.synthetic.main.item_unavailable_center_header.view.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 class CenterAdapter(
@@ -37,8 +36,6 @@ class CenterAdapter(
         const val TYPE_LAST_UPDATED = 5
     }
 
-    private val dateParser: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.FRANCE)
-
     open inner class CenterViewHolder(
         context: Context,
         parent: ViewGroup,
@@ -48,16 +45,10 @@ class CenterAdapter(
         fun bind(center: DisplayItem.Center, position: Int) {
             with(itemView) {
                 centerNameView.text = center.name
-                if (center.available && center.url.isNotBlank()) {
+                if (center.available && center.url.isNotBlank() && center.nextSlot != null) {
                     dateView.text = try {
-                        /** I have not found the exact parser for all date format returned by the API
-                         * Then I take only the string until minutes. This is sub-optimal */
-                        DateFormat.format(
-                            "EEEE d MMM à k'h'mm",
-                            dateParser.parse(center.nextSlot.substring(0, 16))
-                        ).toString().capitalize(Locale.FRANCE) + center.formattedDistance
-
-                        //"Mercredi 25 septembre à 13h35 · 1.2 km"
+                        DateFormat.format("EEEE d MMM à k'h'mm", center.nextSlot).toString()
+                            .capitalize(Locale.FRANCE) + center.formattedDistance
                     } catch (e: Exception) {
                         ""
                     }
@@ -168,13 +159,15 @@ class CenterAdapter(
 
             moreView.setOnClickListener {
                 mExpandedPosition = if (mExpandedPosition == position) {
-                    val oldPosition = mExpandedPosition
-                    notifyItemChanged(oldPosition)
                     -1
                 } else {
+                    val oldPosition = mExpandedPosition
+                    if(oldPosition >= 0) {
+                        notifyItemChanged(oldPosition)
+                    }
                     position
                 }
-                notifyItemChanged(mExpandedPosition)
+                notifyItemChanged(position)
             }
         }
     }

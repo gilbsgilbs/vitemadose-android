@@ -25,7 +25,7 @@ sealed class DisplayItem {
         @SerializedName("location")
         val location: LocationCenter?,
         @SerializedName("prochain_rdv")
-        val nextSlot: String,
+        val nextSlot: Date?,
         @SerializedName("appointment_count")
         val appointmentCount: Int,
         @SerializedName("type")

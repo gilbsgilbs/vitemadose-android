@@ -59,8 +59,11 @@ sealed class SearchEntry {
         val postalCodeList: List<String>
     ) : SearchEntry() {
 
+        /** In case the user has searched 75017, we want to display 75017 to him **/
+        var searchedPostalCode: String? = null
+
         val postalCode: String
-            get() = postalCodeList.first()
+            get() = searchedPostalCode ?: postalCodeList.first()
 
         class Center(
             @SerializedName("coordinates")
