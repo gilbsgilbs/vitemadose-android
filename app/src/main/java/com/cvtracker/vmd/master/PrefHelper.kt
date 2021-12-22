@@ -19,10 +19,13 @@ object PrefHelper {
     private const val PREF_CHRONODOSE_ONBOARDING_DISPLAYED = "PREF_CHRONODOSE_ONBOARDING_DISPLAYED"
     private const val PREF_SEARCH_ENTRY = "PREF_SEARCH_ENTRY"
     private const val PREF_CENTERS_BOOKMARK = "PREF_CENTERS_BOOKMARK"
+    private const val PREF_TAG_TYPE = "PREF_TAG_TYPE"
+    @Deprecated("Not used")
     private const val PREF_PRIMARY_SORT = "PREF_PRIMARY_SORT"
     private const val PREF_FILTERS = "PREF_FILTERS"
     private const val PREF_DISCLAIMER_REPEAT = "PREF_DISCLAIMER_REPEAT"
     private const val PREF_DISCLAIMER_MESSAGE = "PREF_DISCLAIMER_MESSAGE"
+    private const val PREF_NEW_SYSTEM = "PREF_NEW_SYSTEM"
 
     private val sharedPrefs: SharedPreferences
         get() = ViteMaDoseApp.get().getSharedPreferences(PREF_VITEMADOSE, Context.MODE_PRIVATE)
@@ -35,6 +38,13 @@ object PrefHelper {
             sharedPrefs.edit().putBoolean(PREF_CHRONODOSE_ONBOARDING_DISPLAYED, value).apply()
         }
 
+    var tagType: TagType
+        get() = TagType.values()[sharedPrefs.getInt(PREF_TAG_TYPE, TagType.FIRST_SHOT.ordinal)]
+        set(value) {
+            sharedPrefs.edit().putInt(PREF_TAG_TYPE, value.ordinal).apply()
+        }
+
+    @Deprecated("Only SortType.ByProximity is used now. CHanging this won't have any impact")
     var primarySort: SortType
         get() = SortType.fromInt(sharedPrefs.getInt(PREF_PRIMARY_SORT, SortType.ByDate.value))
         set(value) {
@@ -117,6 +127,12 @@ object PrefHelper {
         get() = sharedPrefs.getString(PREF_DISCLAIMER_MESSAGE, null)
         set(value) {
             sharedPrefs.edit().putString(PREF_DISCLAIMER_MESSAGE, value).apply()
+        }
+
+    var isNewSystem: Boolean
+        get() = sharedPrefs.getBoolean(PREF_NEW_SYSTEM, true)
+        set(value) {
+            sharedPrefs.edit().putBoolean(PREF_NEW_SYSTEM, value).apply()
         }
 
     fun updateBookmark(center: DisplayItem.Center) {

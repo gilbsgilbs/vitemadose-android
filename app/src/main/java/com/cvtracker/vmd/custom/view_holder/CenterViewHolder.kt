@@ -10,6 +10,7 @@ import com.cvtracker.vmd.custom.CenterAdapter
 import com.cvtracker.vmd.data.Bookmark
 import com.cvtracker.vmd.data.DisplayItem
 import com.cvtracker.vmd.extensions.*
+import com.cvtracker.vmd.master.PrefHelper
 import com.cvtracker.vmd.util.isTalkbackEnabled
 import kotlinx.android.synthetic.main.item_center.view.*
 
@@ -22,7 +23,7 @@ class CenterViewHolder(
 
     interface Listener {
         fun onClicked (center: DisplayItem.Center)
-        fun onBookmarkClicked (center: DisplayItem.Center, position: Int)
+        fun onBookmarkClicked (adapter: CenterAdapter, center: DisplayItem.Center, position: Int)
         fun onAddressClicked (address: String)
         fun onPhoneClicked (phoneNumber: String)
     }
@@ -33,7 +34,11 @@ class CenterViewHolder(
 
             @SuppressLint("SetTextI18n")
             dateView.text = when {
-                center.available && center.url.isNotBlank() && center.nextSlot != null -> center.formattedNextSlot
+                center.available && center.url.isNotBlank() && center.nextSlot != null -> if (PrefHelper.isNewSystem) {
+                    context.resources.getQuantityString(R.plurals.shot_disponibilities_found, center.appointmentCount, center.appointmentCount)
+                } else {
+                    center.formattedNextSlot
+                }
                 center.available && center.isValidAppointmentByPhoneOnly -> context.getString(R.string.appointment_by_phone_only)
                 else -> context.getString(R.string.no_slots_available)
             } + center.formattedDistance
@@ -77,7 +82,7 @@ class CenterViewHolder(
 
             checkButton.setOnClickListener { listener?.onClicked(center) }
             callButton.setOnClickListener { center.metadata?.phoneFormatted?.let { listener?.onPhoneClicked(it) } }
-            bookmarkView.setOnClickListener { listener?.onBookmarkClicked(center, position) }
+            bookmarkView.setOnClickListener { listener?.onBookmarkClicked(adapter, center, position) }
 
             val slotsToShow = if (center.isChronodose) center.chronodoseCount else center.appointmentCount
             appointmentsCountView.text = if(slotsToShow > 0) {
